@@ -1,0 +1,23 @@
+services:
+  db:
+    image: postgres:17.4
+    environment:
+      POSTGRES_USER: magnetico
+      POSTGRES_PASSWORD: magnetico
+      POSTGRES_DB: magnetico
+    volumes:
+      - db_data_magnetico:/var/lib/postgresql/data
+      - ./init_pg_trgm.sql:/docker-entrypoint-initdb.d/init_pg_trgm.sql
+    restart: unless-stopped
+
+  magnetico:
+    image: ghcr.io/tgragnato/magnetico:latest
+    depends_on:
+      - db
+    ports:
+      - "${MAGNETICO_PORT:-8080}:8080"
+    restart: unless-stopped
+    command: ["/usr/bin/magnetico", "--addr=0.0.0.0:8080", "--database=postgres://magnetico:magnetico@db:5432/magnetico?sslmode=disable"]
+
+volumes:
+  db_data_magnetico:
